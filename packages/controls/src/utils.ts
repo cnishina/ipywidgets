@@ -8,13 +8,13 @@ import * as _ from 'underscore';
  */
 export
 function uuid(): string {
-    var s = [];
-    var hexDigits = '0123456789ABCDEF';
-    for (var i = 0; i < 32; i++) {
+    let s: Array<number|string> = [];
+    let hexDigits = '0123456789ABCDEF';
+    for (let i = 0; i < 32; i++) {
         s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
     }
     s[12] = '4';  // bits 12-15 of the time_hi_and_version field to 0010
-    s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+    s[16] = hexDigits.substr((<number>s[16] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
 
     return s.join('');
 }
@@ -28,7 +28,7 @@ function uuid(): string {
  */
 export
 class WrappedError extends Error {
-    constructor(message, error) {
+    constructor(message: string, error: Error) {
         super(message);
         // Keep a stack of the original error messages.
         if (error instanceof WrappedError) {
@@ -46,15 +46,15 @@ class WrappedError extends Error {
  * Returns a single Promise.
  */
 export
-function resolvePromisesDict(d): Promise<any> {
-    var keys = Object.keys(d);
-    var values = [];
-    keys.forEach(function(key) {
+function resolvePromisesDict(d: {[key:string]: any}): Promise<any> {
+    let keys = Object.keys(d);
+    let values: any[] = [];
+    keys.forEach(key => {
         values.push(d[key]);
     });
-    return Promise.all(values).then(function(v) {
+    return Promise.all(values).then(v => {
         d = {};
-        for(var i=0; i<keys.length; i++) {
+        for(let i=0; i<keys.length; i++) {
             d[keys[i]] = v[i];
         }
         return d;
@@ -69,9 +69,9 @@ function resolvePromisesDict(d): Promise<any> {
  * caused the promise to reject.
  */
 export
-function reject(message, log) {
-    return function promiseRejection(error) {
-        var wrapped_error = new WrappedError(message, error);
+function reject(message: string, log: any) {
+    return (error: Error) => {
+        let wrapped_error = new WrappedError(message, error);
         if (log) console.error(wrapped_error);
         return Promise.reject(wrapped_error);
     };
@@ -89,7 +89,7 @@ function reject(message, log) {
  * text: optional string
  */
 export
-function typeset(element: HTMLElement, text?: string): void {
+function typeset(element: HTMLElement, text?: string) {
     if (text !== void 0) {
         element.textContent = text;
     }
@@ -104,7 +104,7 @@ function typeset(element: HTMLElement, text?: string): void {
  */
 export
 function escape_html(text: string): string {
-    var esc  = document.createElement('div');
+    let esc  = document.createElement('div');
     esc.textContent = text;
     return esc.innerHTML;
 };

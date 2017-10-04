@@ -126,7 +126,7 @@ class BoxView extends DOMWidgetView {
     /**
      * Public constructor
      */
-    initialize(parameters) {
+    initialize(parameters: any) {
         super.initialize(parameters);
         this.children_views = new ViewList(this.add_child_model, null, this);
         this.listenTo(this.model, 'change:children', this.update_children);
@@ -162,10 +162,10 @@ class BoxView extends DOMWidgetView {
         this.set_mapped_classes(BoxView.class_map, 'box_style');
     }
 
-    add_child_model(model) {
+    add_child_model(model: any) {
         // we insert a dummy element so the order is preserved when we add
         // the rendered content later.
-        var dummy = new Widget();
+        let dummy = new Widget();
         this.pWidget.addWidget(dummy);
 
         return this.create_child_view(model).then((view: DOMWidgetView) => {
@@ -198,7 +198,7 @@ class HBoxView extends BoxView {
     /**
      * Public constructor
      */
-    initialize(parameters) {
+    initialize(parameters: any) {
         super.initialize(parameters);
         this.pWidget.addClass('widget-hbox');
     }
@@ -209,7 +209,7 @@ class VBoxView extends BoxView {
     /**
      * Public constructor
      */
-    initialize(parameters) {
+    initialize(parameters: any) {
         super.initialize(parameters);
         this.pWidget.addClass('widget-vbox');
     }

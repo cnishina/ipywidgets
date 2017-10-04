@@ -146,7 +146,7 @@ class ControllerModel extends CoreDOMWidgetModel {
         });
     }
 
-    initialize(attributes, options) {
+    initialize(attributes: any, options: {model_id: string, comm?: any, widget_manager: any;}) {
         super.initialize(attributes, options);
         if (navigator.getGamepads === void 0) {
             // Checks if the browser supports the gamepad API
@@ -174,14 +174,13 @@ class ControllerModel extends CoreDOMWidgetModel {
      * populates the update of axes and button values.
      */
     wait_loop() {
-        var index = this.get('index');
-        var pad = navigator.getGamepads()[index];
+        let index = this.get('index');
+        let pad = navigator.getGamepads()[index];
         if (pad) {
-            var that = this;
             this.setup(pad).then(function(controls) {
-                that.set(controls);
-                that.save_changes();
-                window.requestAnimationFrame(that.update_loop.bind(that));
+                this.set(controls);
+                this.save_changes();
+                window.requestAnimationFrame(this.update_loop.bind(this));
             });
         } else {
             window.requestAnimationFrame(this.wait_loop.bind(this));
@@ -196,7 +195,7 @@ class ControllerModel extends CoreDOMWidgetModel {
      *     axes: list of Axis models,
      * }
      */
-    setup(pad) {
+    setup(pad: {id: any, mapping: any, connected: any, timestamp: any, buttons: any[], axes: any[]}) {
         // Set up the main gamepad attributes
         this.set({
             name: pad.id,
@@ -205,13 +204,12 @@ class ControllerModel extends CoreDOMWidgetModel {
             timestamp: pad.timestamp
         });
         // Create buttons and axes. When done, start the update loop
-        var that = this;
         return utils.resolvePromisesDict({
-            buttons: Promise.all(pad.buttons.map(function(btn, index) {
-                return that._create_button_model(index);
+            buttons: Promise.all(pad.buttons.map((btn, index) => {
+                return this._create_button_model(index);
             })),
-            axes: Promise.all(pad.axes.map(function(axis, index) {
-                return that._create_axis_model(index);
+            axes: Promise.all(pad.axes.map((axis, index) => {
+                return this._create_axis_model(index);
             })),
         });
     }
@@ -221,23 +219,23 @@ class ControllerModel extends CoreDOMWidgetModel {
      * When the gamepad is disconnected, this.reset_gamepad is called.
      */
     update_loop() {
-        var index = this.get('index');
-        var id = this.get('name');
-        var pad = navigator.getGamepads()[index];
+        let index = this.get('index');
+        let id = this.get('name');
+        let pad = navigator.getGamepads()[index];
         if (pad && index === pad.index && id === pad.id) {
             this.set({
                 timestamp: pad.timestamp,
                 connected: pad.connected
             });
             this.save_changes();
-            this.get('buttons').forEach(function(model, index) {
+            (this.get('buttons') as any[]).forEach((model, index) => {
                 model.set({
                     value: pad.buttons[index].value,
                     pressed: pad.buttons[index].pressed
                 });
                 model.save_changes();
             });
-            this.get('axes').forEach(function(model, index) {
+            (this.get('axes') as any[]).forEach((model, index) => {
                 model.set('value', pad.axes[index]);
                 model.save_changes();
             });
@@ -251,10 +249,10 @@ class ControllerModel extends CoreDOMWidgetModel {
      * Resets the gamepad attributes, and start the wait_loop.
      */
     reset_gamepad() {
-        this.get('buttons').forEach(function(button) {
+        (this.get('buttons') as any[]).forEach((button) => {
             button.close();
         });
-        this.get('axes').forEach(function(axis) {
+        (this.get('axes') as any[]).forEach((axis) => {
             axis.close();
         });
         this.set({
@@ -272,7 +270,7 @@ class ControllerModel extends CoreDOMWidgetModel {
     /**
      * Creates a gamepad button widget.
      */
-    _create_button_model(index): Promise<ControllerButtonModel> {
+    _create_button_model(index: any): Promise<ControllerButtonModel> {
         return this.widget_manager.new_widget({
              model_name: 'ControllerButtonModel',
              model_module: '@jupyter-widgets/controls',
@@ -289,7 +287,7 @@ class ControllerModel extends CoreDOMWidgetModel {
     /**
      * Creates a gamepad axis widget.
      */
-    _create_axis_model(index): Promise<ControllerAxisModel>  {
+    _create_axis_model(index: any): Promise<ControllerAxisModel>  {
         return this.widget_manager.new_widget({
              model_name: 'ControllerAxisModel',
              model_module: '@jupyter-widgets/controls',
@@ -311,16 +309,16 @@ class ControllerModel extends CoreDOMWidgetModel {
  */
 export
 class ControllerView extends DOMWidgetView {
-    initialize(parameters) {
+    initialize(parameters: any) {
         super.initialize(parameters);
 
         this.button_views = new ViewList(this.add_button, null, this);
-        this.listenTo(this.model, 'change:buttons', function(model, value) {
+        this.listenTo(this.model, 'change:buttons', (model: any, value: any) => {
             this.button_views.update(value);
         });
 
         this.axis_views = new ViewList(this.add_axis, null, this);
-        this.listenTo(this.model, 'change:axes', function(model, value) {
+        this.listenTo(this.model, 'change:axes', (model: any, value: any) => {
             this.axis_views.update(value);
         });
 
@@ -351,29 +349,27 @@ class ControllerView extends DOMWidgetView {
         this.label.textContent = this.model.get('name') || this.model.readout;
     }
 
-    add_button(model) {
-        var that = this;
-        var dummy = document.createElement('div');
+    add_button(model: any) {
+        let dummy = document.createElement('div');
 
-        that.button_box.appendChild(dummy);
-        return this.create_child_view(model).then(function(view) {
-            that.button_box.replaceChild(view.el, dummy);
-            that.displayed.then(function() {
-                view.trigger('displayed', that);
+        this.button_box.appendChild(dummy);
+        return this.create_child_view(model).then((view) => {
+            this.button_box.replaceChild(view.el, dummy);
+            this.displayed.then(() => {
+                view.trigger('displayed', this);
             });
             return view;
         }).catch(utils.reject('Could not add button view', true));
     }
 
-    add_axis(model) {
-        var that = this;
-        var dummy = document.createElement('div');
+    add_axis(model: any) {
+        let dummy = document.createElement('div');
 
-        that.axis_box.appendChild(dummy);
-        return this.create_child_view(model).then(function(view) {
-            that.axis_box.replaceChild(view.el, dummy);
-            that.displayed.then(function() {
-                view.trigger('displayed', that);
+        this.axis_box.appendChild(dummy);
+        return this.create_child_view(model).then((view) => {
+            this.axis_box.replaceChild(view.el, dummy);
+            this.displayed.then(() => {
+                view.trigger('displayed', this);
             });
             return view;
         }).catch(utils.reject('Could not add axis view', true));

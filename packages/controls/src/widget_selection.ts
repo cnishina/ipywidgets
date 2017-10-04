@@ -17,13 +17,14 @@ import {
     uuid
 } from './utils';
 
+
 import * as _ from 'underscore';
 import * as utils from './utils';
 import * as $ from 'jquery';
 
-function scrollIfNeeded(area, elem) {
-    var ar = area.getBoundingClientRect();
-    var er = elem.getBoundingClientRect();
+function scrollIfNeeded(area: Element, elem: Element) {
+    let ar = area.getBoundingClientRect();
+    let er = elem.getBoundingClientRect();
     if (er.top < ar.top) {
         area.scrollTop -= ar.top - er.top;
     } else if (er.bottom > ar.bottom) {
@@ -66,7 +67,7 @@ class DropdownView extends DescriptionView {
     /**
      * Public constructor.
      */
-    initialize(parameters) {
+    initialize(parameters: any) {
         super.initialize(parameters);
         this.listenTo(this.model, 'change:_options_labels', () => this._updateOptions());
     }
@@ -149,10 +150,10 @@ class SelectView extends DescriptionView {
     /**
      * Public constructor.
      */
-    initialize(parameters) {
+    initialize(parameters: any) {
         super.initialize(parameters);
         this.listenTo(this.model, 'change:_options_labels', () => this._updateOptions());
-        this.listenTo(this.model, 'change:index', (model, value, options) => this.updateSelection(options));
+        this.listenTo(this.model, 'change:index', (model: any, value: any, options: any) => this.updateSelection(options));
         // Create listbox here so that subclasses can modify it before it is populated in render()
         this.listbox = document.createElement('select');
     }

@@ -114,7 +114,7 @@ class CheckboxView extends DescriptionView {
      * model to update.
      */
     _handle_click() {
-        var value = this.model.get('value');
+        let value = this.model.get('value');
         this.model.set('value', !value, {updated_view: this});
         this.touch();
     }
@@ -125,7 +125,7 @@ class CheckboxView extends DescriptionView {
      * Called when the model is changed. The model may have been
      * changed by another view or by a state update from the back-end.
      */
-    update(options?) {
+    update(options?: any) {
         this.checkbox.checked = this.model.get('value');
 
         if (options === undefined || options.updated_view != this) {
@@ -182,7 +182,7 @@ class ToggleButtonView extends DOMWidgetView {
      * Called when the model is changed. The model may have been
      * changed by another view or by a state update from the back-end.
      */
-    update(options?){
+    update(options?: any) {
         if (this.model.get('value')) {
             this.el.classList.add('mod-active');
         } else {
@@ -193,14 +193,14 @@ class ToggleButtonView extends DOMWidgetView {
             this.el.disabled = this.model.get('disabled');
             this.el.setAttribute('title', this.model.get('tooltip'));
 
-            var description = this.model.get('description');
-            var icon = this.model.get('icon');
+            let description = this.model.get('description');
+            let icon = this.model.get('icon');
             if (description.trim().length === 0 && icon.trim().length === 0) {
                 this.el.innerHTML = '&nbsp;'; // Preserve button height
             } else {
                 this.el.textContent = '';
                 if (icon.trim().length) {
-                    var i = document.createElement('i');
+                    let i = document.createElement('i');
                     this.el.appendChild(i);
                     i.classList.add('fa');
                     i.classList.add('fa-' + icon);
@@ -224,9 +224,9 @@ class ToggleButtonView extends DOMWidgetView {
      * Calling model.set will trigger all of the other views of the
      * model to update.
      */
-    _handle_click(event) {
+    _handle_click(event: Event) {
         event.preventDefault();
-        var value = this.model.get('value');
+        let value = this.model.get('value');
         this.model.set('value', !value, {updated_view: this});
         this.touch();
     }

@@ -7,6 +7,10 @@ import * as Backbone from 'backbone';
 import * as services from '@jupyterlab/services';
 
 import {
+    JSONObject, JSONValue
+} from '@phosphor/coreutils';
+
+import {
     WidgetModel, WidgetView
 } from './widget';
 
@@ -132,6 +136,49 @@ interface StateOptions {
     drop_defaults?: boolean;
 }
 
+export interface StateDictionary {
+    [model_id: string]: WidgetState;
+}
+
+/**
+ * Jupyter Interactive Widget State JSON schema
+ */
+export interface WidgetState {
+    /**
+     * Format version (major)
+     */
+    version_major?: number;
+    /**
+     * Format version (minor)
+     */
+    version_minor?: number;
+    /**
+     * Model State for All Widget Models - keys are model ids, values are model state
+     */
+    state?: ModelState;
+}
+
+/**
+ * Model State for All Widget Models - keys are model ids, values are model state
+ */
+export
+interface ModelState {
+    buffers?: Buffer[];
+    model_name: string | null;
+    model_module: string | null;
+    model_module_version: string;
+    state: JSONObject;
+}
+
+export
+interface Buffer {
+    data: string;
+    path: (string | number)[];
+    encoding: Encoding;
+}
+
+export enum Encoding { hex = "hex", base64 = "base64" }
+
 /**
  * Manager abstract base class
  */
@@ -194,7 +241,7 @@ abstract class ManagerBase<T> {
     /**
      * callback handlers specific to a view
      */
-    callbacks (view: WidgetView) {
+    callbacks (view?: WidgetView) {
         return {};
     };
 
@@ -243,7 +290,7 @@ abstract class ManagerBase<T> {
      *                          required and additional options are available.
      * @param  serialized_state - serialized model attributes.
      */
-    new_widget(options: WidgetOptions, serialized_state: any = {}): Promise<WidgetModel> {
+    new_widget(options: ModelOptions, serialized_state: any = {}): Promise<WidgetModel> {
         let commPromise;
         // we check to make sure the view information is provided, to help catch
         // backwards incompatibility errors.
@@ -352,7 +399,7 @@ abstract class ManagerBase<T> {
         }
         let widget_model = new ModelType(attributes, modelOptions);
         widget_model.once('comm:close', () => {
-            delete this._models[model_id];
+            delete this._models[widget_model.model_id];
         });
         widget_model.name = options.model_name;
         widget_model.module = options.model_module;
@@ -381,15 +428,15 @@ abstract class ManagerBase<T> {
      * @returns Promise for a state dictionary
      */
     get_state(options: StateOptions = {}): Promise<any> {
-        return utils.resolvePromisesDict(this._models).then((models) => {
-            let state = {};
+        return utils.resolvePromisesDict(this._models).then(models => {
+            // let state: any = {};
             Object.keys(models).forEach(model_id => {
                 let model = models[model_id];
-                let split = utils.remove_buffers(model.serialize(model.get_state(options.drop_defaults)));
-                let buffers = split.buffers.map((buffer, index) => {
-                    return {data: utils.bufferToBase64(buffer), path: split.buffer_paths[index], encoding: 'base64'};
+                let split = utils.remove_buffers(model.serialize(model.get_state(!!options.drop_defaults)));
+                let buffers: Buffer[] = split.buffers.map((buffer, index) => {
+                    return {data: utils.bufferToBase64(buffer), path: split.buffer_paths[index], encoding: Encoding.base64};
                 });
-                state[model_id] = {
+                state.model_id = {
                     model_name: model.name,
                     model_module: model.module,
                     model_module_version: model.get('_model_module_version'),
@@ -397,7 +444,7 @@ abstract class ManagerBase<T> {
                 };
                 // To save space, only include the buffer key if we have buffers
                 if (buffers.length > 0) {
-                    state[model_id].buffers = buffers;
+                    state.model_id.buffers = buffers;
                 }
             });
             return {version_major: 2, version_minor: 0, state: state};
@@ -420,7 +467,7 @@ abstract class ManagerBase<T> {
         }
         let models = state.state;
         // Recreate all the widget models for the given widget manager state.
-        let all_models = this._get_comm_info().then(live_comms => {
+        let all_models = this._get_comm_info().then((live_comms: any) => {
             return Promise.all(Object.keys(models).map(model_id => {
 
                 // First put back the binary buffers
@@ -501,7 +548,7 @@ abstract class ManagerBase<T> {
      * @param metadata The metadata in the open message
      */
     protected abstract _create_comm(comm_target_name: string, model_id: string, data?: any, metadata?: any): Promise<any>;
-    protected abstract _get_comm_info();
+    protected abstract _get_comm_info(): any;
 
     /**
      * Dictionary of model ids and model instance promises
