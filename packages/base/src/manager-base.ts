@@ -382,7 +382,7 @@ abstract class ManagerBase<T> {
      */
     get_state(options: StateOptions = {}): Promise<any> {
         return utils.resolvePromisesDict(this._models).then((models) => {
-            let state = {};
+            let state: {[key: string]: any} = {};
             Object.keys(models).forEach(model_id => {
                 let model = models[model_id];
                 let split = utils.remove_buffers(model.serialize(model.get_state(options.drop_defaults)));
@@ -413,14 +413,14 @@ abstract class ManagerBase<T> {
      * current manager state, and then attempts to redisplay the widgets in the
      * state.
      */
-    set_state(state): Promise<WidgetModel[]> {
+    set_state(state: {[key: string]: any}): Promise<WidgetModel[]> {
         // Check to make sure that it's the same version we are parsing.
         if (!(state.version_major && state.version_major <= 2)) {
             throw "Unsupported widget state format";
         }
         let models = state.state;
         // Recreate all the widget models for the given widget manager state.
-        let all_models = this._get_comm_info().then(live_comms => {
+        let all_models = this._get_comm_info().then((live_comms: any) => {
             return Promise.all(Object.keys(models).map(model_id => {
 
                 // First put back the binary buffers
@@ -428,9 +428,9 @@ abstract class ManagerBase<T> {
                 let model = models[model_id];
                 let modelState = model.state;
                 if (model.buffers) {
-                    let bufferPaths = model.buffers.map(b => b.path);
+                    let bufferPaths = model.buffers.map((b: any) => b.path);
                     // put_buffers expects buffers to be DataViews
-                    let buffers = model.buffers.map(b => new DataView(decode[b.encoding](b.data)));
+                    let buffers = model.buffers.map((b: any) => new DataView(decode[b.encoding](b.data)));
                     utils.put_buffers(model.state, bufferPaths, buffers);
                 }
 
@@ -501,7 +501,7 @@ abstract class ManagerBase<T> {
      * @param metadata The metadata in the open message
      */
     protected abstract _create_comm(comm_target_name: string, model_id: string, data?: any, metadata?: any): Promise<any>;
-    protected abstract _get_comm_info();
+    protected abstract _get_comm_info(): any;
 
     /**
      * Dictionary of model ids and model instance promises

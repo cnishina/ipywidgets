@@ -36,14 +36,19 @@ import * as Backbone from 'backbone';
 
 // Caches a local reference to `Element.prototype` for faster access.
 var ElementProto: Element = Element.prototype;//: typeof Element = (typeof Element !== 'undefined' && Element.prototype) || {};
+class ElementMatcher extends Element {
+  mozMatchesSelector: any;
+  oMatchesSelector: any;
+}
+var ElementMatcherProto = ElementMatcher.prototype;
 
 // Find the right `Element#matches` for IE>=9 and modern browsers.
-var matchesSelector = ElementProto.matches ||
-    ElementProto['webkitMatchesSelector'] ||
-    ElementProto['mozMatchesSelector'] ||
-    ElementProto['msMatchesSelector'] ||
-    ElementProto['oMatchesSelector'] ||
-    function matches(selector) {
+var matchesSelector = ElementMatcherProto.matches ||
+    ElementMatcherProto.webkitMatchesSelector ||
+    ElementMatcherProto.mozMatchesSelector ||
+    ElementMatcherProto.msMatchesSelector ||
+    ElementMatcherProto.oMatchesSelector ||
+    function matches(selector: any) {
         var matches = (this.document || this.ownerDocument).querySelectorAll(selector),
         i = matches.length;
         while (--i >= 0 && matches.item(i) !== this) {}
@@ -73,7 +78,7 @@ class NativeView<T extends Backbone.Model> extends Backbone.View<T> {
 
     // Set a hash of attributes to the view's `el`. We use the "prop" version
     // if available, falling back to `setAttribute` for the catch-all.
-    _setAttributes(attrs) {
+    _setAttributes(attrs: any[]) {
       for (var attr in attrs) {
         attr in this.el ? this.el[attr] = attrs[attr] : this.el.setAttribute(attr, attrs[attr]);
       }
@@ -93,7 +98,7 @@ class NativeView<T extends Backbone.Model> extends Backbone.View<T> {
      * https://github.com/jquery/jquery/blob/7d21f02b9ec9f655583e898350badf89165ed4d5/src/event.js#L442
      * for some similar exceptional cases).
      */
-    delegate(eventName, selector, listener) {
+    delegate(eventName: string, selector: any, listener: any) {
       if (typeof selector !== 'string') {
         listener = selector;
         selector = null;
@@ -107,7 +112,7 @@ class NativeView<T extends Backbone.Model> extends Backbone.View<T> {
       }
 
       var root = this.el;
-      var handler = selector ? function (e) {
+      var handler = selector ? (e: any) => {
         var node = e.target || e.srcElement;
         for (; node && node != root; node = node.parentNode) {
           if (matchesSelector.call(node, selector)) {
@@ -128,7 +133,7 @@ class NativeView<T extends Backbone.Model> extends Backbone.View<T> {
 
     // Remove a single delegated event. Either `eventName` or `selector` must
     // be included, `selector` and `listener` are optional.
-    undelegate(eventName, selector, listener) {
+    undelegate(eventName: string, selector: any, listener: any) {
       if (typeof selector === 'function') {
         listener = selector;
         selector = null;
